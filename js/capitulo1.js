@@ -1478,9 +1478,10 @@ function showConfetti() {
 }
 
 // ============================================
-// RESULTADOS FINALES CON OPCIÓN DE PASAR DE NIVEL/CAPÍTULO
+// RESULTADOS FINALES CON BOTONES CORREGIDOS
 // ============================================
 function showFinalResults() {
+    // Ocultar elementos del juego
     domElements.multipleChoiceContainer.classList.add('hidden');
     domElements.fillBlankContainer.classList.add('hidden');
     domElements.submitBtn.classList.add('hidden');
@@ -1498,45 +1499,63 @@ function showFinalResults() {
     // Verificar si se completó el nivel (todas las preguntas respondidas Y 75% o más)
     const levelCompleted = allQuestionsAnswered && percentage >= REQUIRED_PERCENTAGE;
     
-    // Determinar el siguiente nivel disponible
-    let nextLevel = null;
-    let nextLevelName = '';
-    let nextChapter = null;
+    // Variables para botones
+    let showNextLevelBtn = false;
+    let nextLevelTarget = '';
+    let nextLevelDisplayName = '';
+    let showNextChapterBtn = false;
+    let nextChapterNumber = 0;
     
+    // Procesar según el nivel completado
     if (levelCompleted) {
-        // Guardar progreso y desbloquear siguiente nivel
+        // Guardar progreso
         saveLevelProgress(currentLevel, correctCount, incorrectCount);
         
-        if (currentLevel === 'facil' && !levelUnlocked.medio) {
-            levelUnlocked.medio = true;
-            saveUnlockedLevels();
-            nextLevel = 'medio';
-            nextLevelName = 'Medio';
-            audioManager.play('levelUp');
-            showConfetti();
-            levelMessage = `✨ ¡Nivel Fácil Superado! Nivel Medio Desbloqueado ✨ (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
-        } else if (currentLevel === 'medio' && !levelUnlocked.dificil) {
-            levelUnlocked.dificil = true;
-            saveUnlockedLevels();
-            nextLevel = 'dificil';
-            nextLevelName = 'Difícil';
-            audioManager.play('levelUp');
-            showConfetti();
-            levelMessage = `🏆 ¡Nivel Medio Superado! Nivel Difícil Desbloqueado 🏆 (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
+        if (currentLevel === 'facil') {
+            // Desbloquear nivel medio si no está desbloqueado
+            if (!levelUnlocked.medio) {
+                levelUnlocked.medio = true;
+                saveUnlockedLevels();
+                audioManager.play('levelUp');
+                showConfetti();
+                levelMessage = `✨ ¡Nivel Fácil Superado! Nivel Medio Desbloqueado ✨ (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
+            } else {
+                levelMessage = `✅ ¡Nivel Fácil Completado! (${percentage}%)`;
+            }
+            // Mostrar botón de siguiente nivel
+            showNextLevelBtn = true;
+            nextLevelTarget = 'medio';
+            nextLevelDisplayName = 'Medio';
+            
+        } else if (currentLevel === 'medio') {
+            // Desbloquear nivel difícil si no está desbloqueado
+            if (!levelUnlocked.dificil) {
+                levelUnlocked.dificil = true;
+                saveUnlockedLevels();
+                audioManager.play('levelUp');
+                showConfetti();
+                levelMessage = `🏆 ¡Nivel Medio Superado! Nivel Difícil Desbloqueado 🏆 (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
+            } else {
+                levelMessage = `✅ ¡Nivel Medio Completado! (${percentage}%)`;
+            }
+            // Mostrar botón de siguiente nivel
+            showNextLevelBtn = true;
+            nextLevelTarget = 'dificil';
+            nextLevelDisplayName = 'Difícil';
+            
         } else if (currentLevel === 'dificil') {
-            // Completar capítulo y preparar para siguiente capítulo
-            nextChapter = 2;
+            // Completar capítulo
             audioManager.play('complete');
             showConfetti();
             levelMessage = `👑 ¡Nivel Difícil Dominado! ¡Has completado el Capítulo 1! 👑 (${percentage}%)`;
-        } else if (currentLevel === 'facil' && levelUnlocked.medio) {
-            levelMessage = `✅ ¡Nivel Fácil Completado! (${percentage}%)`;
-        } else if (currentLevel === 'medio' && levelUnlocked.dificil) {
-            levelMessage = `✅ ¡Nivel Medio Completado! (${percentage}%)`;
+            // Mostrar botón de siguiente capítulo
+            showNextChapterBtn = true;
+            nextChapterNumber = 2;
         }
         
         // Actualizar botones de nivel
         updateLevelButtons();
+        
     } else if (allQuestionsAnswered && percentage < REQUIRED_PERCENTAGE) {
         levelMessage = `⚠️ Necesitas ${REQUIRED_PERCENTAGE}% para desbloquear el siguiente nivel. Obtuviste ${percentage}% ⚠️`;
     } else {
@@ -1549,28 +1568,29 @@ function showFinalResults() {
     else if (percentage >= 50) message = 'Bien, pero puedes repasar algunos conceptos.';
     else message = 'Sigue estudiando, la historia de la iglesia es fascinante.';
     
-    // Construir botones de acción
+    // Construir botones de acción - SIEMPRE mostrar los botones base
     let actionButtons = `
         <button class="final-btn" onclick="backToMenu()">📚 Volver al Menú</button>
         <button class="final-btn" onclick="restartChapter()">🔄 Repetir Nivel</button>
     `;
     
-    // Botón para siguiente nivel (si está disponible)
-    if (nextLevel) {
-        actionButtons += `<button class="final-btn next-level-btn" onclick="goToNextLevel('${nextLevel}')">🎯 Siguiente Nivel: ${nextLevelName} →</button>`;
+    // Botón para siguiente nivel (si aplica)
+    if (showNextLevelBtn) {
+        actionButtons += `<button class="final-btn next-level-btn" onclick="goToNextLevel('${nextLevelTarget}')">🎯 Siguiente Nivel: ${nextLevelDisplayName} →</button>`;
     }
     
-    // Botón para siguiente capítulo (si completó el nivel difícil)
-    if (nextChapter) {
-        actionButtons += `<button class="final-btn next-chapter-btn" onclick="goToNextChapter(${nextChapter})">📖 Siguiente Capítulo: ${nextChapter} →</button>`;
+    // Botón para siguiente capítulo (si aplica)
+    if (showNextChapterBtn) {
+        actionButtons += `<button class="final-btn next-chapter-btn" onclick="goToNextChapter(${nextChapterNumber})">📖 Siguiente Capítulo: ${nextChapterNumber} →</button>`;
     }
     
     // Botón para cambiar nivel manualmente
     actionButtons += `<button class="final-btn" onclick="changeLevelPrompt()">🎮 Cambiar Nivel</button>`;
     
+    // Mostrar resultados
     domElements.finalResults.innerHTML = `
         <div class="final-results-content">
-            <h2>🎉 ${levelCompleted && currentLevel === 'dificil' ? '¡CAPÍTULO 1 COMPLETADO!' : '¡NIVEL COMPLETADO!'} 🎉</h2>
+            <h2>🎉 ${currentLevel === 'dificil' && levelCompleted ? '¡CAPÍTULO 1 COMPLETADO!' : '¡NIVEL COMPLETADO!'} 🎉</h2>
             <div class="level-badge">${levelMessage}</div>
             <div class="final-stats">
                 <div class="final-stat-item">
