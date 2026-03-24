@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Capítulo 11 - Historia Denominacional</title>
+    <!-- FUENTES MODERNAS -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/capitulos.css">
+</head>
+<body>
+    <div id="game" class="game-container">
+        <!-- SECCIÓN DEL TÍTULO PRINCIPAL -->
+        <div class="title-section">
+            <h1 class="main-title">HISTORIA DENOMINACIONAL</h1>
+            <div class="sub-title" id="chapterTitle">Capítulo 11: La Terminación de la Comisión Evangélica - Nivel fácil</div>
+        </div>
+
+        <!-- HEADER COMPLETO (VISIBLE EN ESCRITORIO) -->
+        <div class="game-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="backToMenu()">← Volver al Menú</button>
+                <select id="chapterSelector" class="chapter-selector" title="Seleccionar capítulo"></select>
+            </div>
+            
+            <div class="header-center">
+                <span class="chapter-number" id="questionCounter">Pregunta 1/34</span>
+                <span class="question-type-badge" id="questionType">Selección Simple</span>
+            </div>
+            
+            <div class="header-right">
+                <div class="level-selector">
+                    <button class="level-btn" data-level="facil" onclick="changeLevel('facil')">Fácil</button>
+                    <button class="level-btn" data-level="medio" onclick="changeLevel('medio')">Medio</button>
+                    <button class="level-btn" data-level="dificil" onclick="changeLevel('dificil')">Difícil</button>
+                </div>
+                <!-- Botón hamburguesa (solo visible en móvil) -->
+                <button class="hamburger-menu" id="hamburgerBtn" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MENÚ LATERAL - CON CAPÍTULOS 1-13 -->
+        <div class="side-menu hidden" id="sideMenu">
+            <h3>📋 MENÚ RÁPIDO</h3>
+            
+            <button class="back-btn" onclick="backToMenu()">← Menú Principal</button>
+            
+            <!-- SECCIÓN DE NIVELES EN EL MENÚ -->
+            <div class="level-selector-menu">
+                <h4>🎮 NIVEL DE DIFICULTAD</h4>
+                <div class="level-buttons">
+                    <button class="level-btn" data-level="facil" onclick="changeLevel('facil')">Fácil</button>
+                    <button class="level-btn" data-level="medio" onclick="changeLevel('medio')">Medio</button>
+                    <button class="level-btn" data-level="dificil" onclick="changeLevel('dificil')">Difícil</button>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN DE CAPÍTULOS 1-13 -->
+            <div class="chapters-section">
+                <h4>📚 CAPÍTULOS 1-13</h4>
+                <div class="chapters-grid" id="chaptersGrid">
+                    <!-- Los capítulos se cargarán dinámicamente con JS -->
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                <h4>⚡ ACCIONES</h4>
+                <button class="action-btn" onclick="restartChapter()">🔄 Reiniciar Nivel</button>
+                <button class="action-btn" onclick="changeLevelPrompt()">🎮 Cambiar Nivel</button>
+            </div>
+            
+            <div class="menu-stats">
+                <h4>📊 MI PROGRESO</h4>
+                <div class="stat-item">
+                    <span class="stat-label">✅ Correctas:</span>
+                    <span class="stat-value correct" id="menuCorrectCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">❌ Incorrectas:</span>
+                    <span class="stat-value incorrect" id="menuIncorrectCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">📈 Progreso:</span>
+                    <span class="stat-value" id="menuProgress">0%</span>
+                </div>
+            </div>
+            
+            <div class="menu-footer">
+                <p>📖 Historia Denominacional</p>
+                <p class="version">v1.0</p>
+            </div>
+        </div>
+
+        <!-- OVERLAY DEL MENÚ -->
+        <div class="menu-overlay hidden" id="menuOverlay" onclick="toggleMenu()"></div>
+
+        <!-- ESTADÍSTICAS EN VIVO -->
+        <div class="score-stats">
+            <div class="score-stats-item">
+                <span class="score-stats-label">✅ Correctas:</span>
+                <span class="score-stats-value correct" id="correctCount">0</span>
+            </div>
+            <div class="score-stats-item">
+                <span class="score-stats-label">❌ Incorrectas:</span>
+                <span class="score-stats-value incorrect" id="incorrectCount">0</span>
+            </div>
+        </div>
+
+        <!-- PREGUNTA -->
+        <div id="questionText" class="question-text"></div>
+
+        <!-- CONTENEDORES DE PREGUNTAS -->
+        <div id="multipleChoiceContainer" class="options-container"></div>
+        <div id="fillBlankContainer" class="fill-container hidden"></div>
+
+        <!-- BOTONES PRINCIPALES -->
+        <button id="submitBtn" class="submit-btn" onclick="submitAnswer()">✓ COMPROBAR RESPUESTA</button>
+        <div id="resultMessage" class="result-message hidden"></div>
+        <button id="nextBtn" class="next-btn hidden" onclick="nextQuestion()">SIGUIENTE PREGUNTA →</button>
+
+        <!-- RESULTADOS FINALES -->
+        <div id="finalResults" class="hidden"></div>
+
+        <!-- BARRA DE PROGRESO -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="progressText">Progreso: 0/34</div>
+        </div>
+    </div>
+
+    <script src="../js/capitulo11.js"></script>
+</body>
+</html>

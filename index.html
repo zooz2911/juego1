@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia Denominacional - Juego Interactivo</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <div class="bg-image"></div>
+    <div class="bg-overlay"></div>
+
+    <div id="intro" class="intro-container">
+        <h1 class="visually-hidden">Historia Denominacional</h1>
+        
+        <button class="start-btn-styled" onclick="startGame()" aria-label="Comenzar juego">
+            ¿HAZ CLIC PARA EMPEZAR?
+        </button>
+    </div>
+
+    <div id="menu" class="menu-container hidden">
+        <h1 class="menu-title">HISTORIA DENOMINACIONAL</h1>
+        <div class="menu-subtitle">Selecciona un capítulo para jugar</div>
+        
+        <div class="chapters-grid" id="chaptersGrid">
+            </div>
+
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-value" id="totalChapters">13</div>
+                <div class="stat-label">Capítulos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="completedChapters">0</div>
+                <div class="stat-label">Completados</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalQuestions">72</div>
+                <div class="stat-label">Preguntas Cap. 1</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/index.js"></script>
+</body>
+</html>
