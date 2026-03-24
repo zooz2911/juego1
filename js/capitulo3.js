@@ -1092,7 +1092,6 @@ function showLockedModal(targetLevel) {
         requiredProgress = loadLevelProgress('medio');
     }
     
-    const isCompleted = requiredProgress.isCompleted;
     const currentPercent = requiredProgress.percentage;
     const answeredQuestions = requiredProgress.totalAnswered;
     const totalQuestions = requiredProgress.totalQuestions;
@@ -1620,7 +1619,7 @@ function showConfetti() {
 }
 
 // ============================================
-// RESULTADOS FINALES
+// RESULTADOS FINALES CON BOTONES DE SIGUIENTE NIVEL/CAPÍTULO
 // ============================================
 function showFinalResults() {
     domElements.multipleChoiceContainer.classList.add('hidden');
@@ -1640,37 +1639,98 @@ function showFinalResults() {
     // Verificar si se completó el nivel (todas las preguntas respondidas Y 75% o más)
     const levelCompleted = allQuestionsAnswered && percentage >= REQUIRED_PERCENTAGE;
     
+    // Variables para botones
+    let showNextLevelBtn = false;
+    let nextLevelTarget = '';
+    let nextLevelDisplayName = '';
+    let showNextChapterBtn = false;
+    let nextChapterNumber = 0;
+    
+    // Procesar según el nivel completado
     if (levelCompleted) {
-        // Guardar progreso y desbloquear siguiente nivel
+        // Guardar progreso
         saveLevelProgress(currentLevel, correctCount, incorrectCount);
         
         if (currentLevel === 'facil') {
-            levelMessage = `✨ ¡Nivel Fácil Superado! Nivel Medio Desbloqueado ✨ (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
-            audioManager.play('complete');
-            showConfetti();
+            // Desbloquear nivel medio si no está desbloqueado
+            if (!levelUnlocked.medio) {
+                levelUnlocked.medio = true;
+                saveUnlockedLevels();
+                audioManager.play('levelUp');
+                showConfetti();
+                levelMessage = `✨ ¡Nivel Fácil Superado! Nivel Medio Desbloqueado ✨ (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
+            } else {
+                levelMessage = `✅ ¡Nivel Fácil Completado! (${percentage}%)`;
+            }
+            // Mostrar botón de siguiente nivel
+            showNextLevelBtn = true;
+            nextLevelTarget = 'medio';
+            nextLevelDisplayName = 'Medio';
+            
         } else if (currentLevel === 'medio') {
-            levelMessage = `🏆 ¡Nivel Medio Superado! Nivel Difícil Desbloqueado 🏆 (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
-            audioManager.play('complete');
-            showConfetti();
+            // Desbloquear nivel difícil si no está desbloqueado
+            if (!levelUnlocked.dificil) {
+                levelUnlocked.dificil = true;
+                saveUnlockedLevels();
+                audioManager.play('levelUp');
+                showConfetti();
+                levelMessage = `🏆 ¡Nivel Medio Superado! Nivel Difícil Desbloqueado 🏆 (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
+            } else {
+                levelMessage = `✅ ¡Nivel Medio Completado! (${percentage}%)`;
+            }
+            // Mostrar botón de siguiente nivel
+            showNextLevelBtn = true;
+            nextLevelTarget = 'dificil';
+            nextLevelDisplayName = 'Difícil';
+            
         } else if (currentLevel === 'dificil') {
-            levelMessage = `👑 ¡Nivel Difícil Dominado! ¡Eres un Experto en la Historia de la Iglesia Remanente! 👑 (${percentage}%)`;
+            // Completar capítulo - ir al siguiente capítulo
             audioManager.play('complete');
             showConfetti();
+            levelMessage = `👑 ¡Nivel Difícil Dominado! ¡Has completado el Capítulo 3! 👑 (${percentage}%)`;
+            // Mostrar botón de siguiente capítulo
+            showNextChapterBtn = true;
+            nextChapterNumber = 4;
         }
+        
+        // Actualizar botones de nivel
+        updateLevelButtons();
+        
     } else if (allQuestionsAnswered && percentage < REQUIRED_PERCENTAGE) {
         levelMessage = `⚠️ Necesitas ${REQUIRED_PERCENTAGE}% para desbloquear el siguiente nivel. Obtuviste ${percentage}% ⚠️`;
     } else {
         levelMessage = `📖 Completa todas las preguntas para desbloquear el siguiente nivel (requiere ${REQUIRED_PERCENTAGE}%)`;
     }
     
+    // Mensaje según porcentaje
     if (percentage >= 90) message = '¡Excelente! Conoces bien el surgimiento de la Iglesia Remanente.';
     else if (percentage >= REQUIRED_PERCENTAGE) message = '¡Muy bien! Has superado el nivel.';
     else if (percentage >= 50) message = 'Bien, pero puedes repasar algunos conceptos.';
     else message = 'Sigue estudiando, la historia de la iglesia es fascinante.';
     
+    // Construir botones de acción - SIEMPRE mostrar los botones base
+    let actionButtons = `
+        <button class="final-btn" onclick="backToMenu()">📚 Volver al Menú</button>
+        <button class="final-btn" onclick="restartChapter()">🔄 Repetir Nivel</button>
+    `;
+    
+    // Botón para siguiente nivel (si aplica)
+    if (showNextLevelBtn) {
+        actionButtons += `<button class="final-btn next-level-btn" onclick="goToNextLevel('${nextLevelTarget}')">🎯 Siguiente Nivel: ${nextLevelDisplayName} →</button>`;
+    }
+    
+    // Botón para siguiente capítulo (si aplica)
+    if (showNextChapterBtn) {
+        actionButtons += `<button class="final-btn next-chapter-btn" onclick="goToNextChapter(${nextChapterNumber})">📖 Siguiente Capítulo: ${nextChapterNumber} →</button>`;
+    }
+    
+    // Botón para cambiar nivel manualmente
+    actionButtons += `<button class="final-btn" onclick="changeLevelPrompt()">🎮 Cambiar Nivel</button>`;
+    
+    // Mostrar resultados
     domElements.finalResults.innerHTML = `
         <div class="final-results-content">
-            <h2>🎉 ¡CAPÍTULO 3 COMPLETADO! 🎉</h2>
+            <h2>🎉 ${currentLevel === 'dificil' && levelCompleted ? '¡CAPÍTULO 3 COMPLETADO!' : '¡NIVEL COMPLETADO!'} 🎉</h2>
             <div class="level-badge">${levelMessage}</div>
             <div class="final-stats">
                 <div class="final-stat-item">
@@ -1685,9 +1745,7 @@ function showFinalResults() {
             <div class="final-percentage">${percentage}% de aciertos</div>
             <div class="final-message">"${message}"</div>
             <div class="final-buttons">
-                <button class="final-btn" onclick="backToMenu()">📚 Volver al Menú</button>
-                <button class="final-btn" onclick="restartChapter()">🔄 Repetir Nivel</button>
-                <button class="final-btn" onclick="changeLevelPrompt()">🎮 Cambiar Nivel</button>
+                ${actionButtons}
             </div>
         </div>
     `;
@@ -1699,6 +1757,44 @@ function showFinalResults() {
     
     loadChapterSelector();
     loadChaptersMenu();
+}
+
+// ============================================
+// FUNCIÓN PARA IR AL SIGUIENTE NIVEL
+// ============================================
+function goToNextLevel(level) {
+    if (confirm(`¿Ir al nivel ${level}? Se reiniciará tu progreso en este nivel.`)) {
+        currentLevel = level;
+        localStorage.setItem('historiaDenominacional_level', level);
+        
+        const allLevelBtns = document.querySelectorAll('.level-btn');
+        allLevelBtns.forEach(btn => {
+            if (btn.dataset.level === level) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        const chapterNumber = localStorage.getItem('historiaDenominacional_currentChapter') || '3';
+        if (domElements.chapterTitle) {
+            domElements.chapterTitle.textContent = `Capítulo ${chapterNumber}: Surge la Iglesia Remanente (1844-1852) - Nivel ${level}`;
+        }
+        
+        restartChapter();
+    }
+}
+
+// ============================================
+// FUNCIÓN PARA IR AL SIGUIENTE CAPÍTULO
+// ============================================
+function goToNextChapter(chapterNumber) {
+    if (confirm(`¿Ir al Capítulo ${chapterNumber}? Se perderá tu progreso actual.`)) {
+        localStorage.setItem('historiaDenominacional_currentChapter', chapterNumber);
+        // Reiniciar nivel guardado para el nuevo capítulo
+        localStorage.setItem('historiaDenominacional_level', 'facil');
+        window.location.href = `../libros/capitulo${chapterNumber}.html`;
+    }
 }
 
 function changeLevelPrompt() {
@@ -1863,6 +1959,9 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// ============================================
+// HACER FUNCIONES GLOBALES
+// ============================================
 window.backToMenu = backToMenu;
 window.submitAnswer = submitAnswer;
 window.nextQuestion = nextQuestion;
@@ -1871,3 +1970,5 @@ window.changeLevel = changeLevel;
 window.changeLevelPrompt = changeLevelPrompt;
 window.toggleMenu = toggleMenu;
 window.goToChapter = goToChapter;
+window.goToNextLevel = goToNextLevel;
+window.goToNextChapter = goToNextChapter;
