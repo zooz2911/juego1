@@ -1478,7 +1478,7 @@ function showConfetti() {
 }
 
 // ============================================
-// RESULTADOS FINALES
+// RESULTADOS FINALES CON OPCIÓN DE PASAR DE NIVEL/CAPÍTULO
 // ============================================
 function showFinalResults() {
     domElements.multipleChoiceContainer.classList.add('hidden');
@@ -1498,37 +1498,79 @@ function showFinalResults() {
     // Verificar si se completó el nivel (todas las preguntas respondidas Y 75% o más)
     const levelCompleted = allQuestionsAnswered && percentage >= REQUIRED_PERCENTAGE;
     
+    // Determinar el siguiente nivel disponible
+    let nextLevel = null;
+    let nextLevelName = '';
+    let nextChapter = null;
+    
     if (levelCompleted) {
         // Guardar progreso y desbloquear siguiente nivel
         saveLevelProgress(currentLevel, correctCount, incorrectCount);
         
-        if (currentLevel === 'facil') {
+        if (currentLevel === 'facil' && !levelUnlocked.medio) {
+            levelUnlocked.medio = true;
+            saveUnlockedLevels();
+            nextLevel = 'medio';
+            nextLevelName = 'Medio';
+            audioManager.play('levelUp');
+            showConfetti();
             levelMessage = `✨ ¡Nivel Fácil Superado! Nivel Medio Desbloqueado ✨ (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
-            audioManager.play('complete');
+        } else if (currentLevel === 'medio' && !levelUnlocked.dificil) {
+            levelUnlocked.dificil = true;
+            saveUnlockedLevels();
+            nextLevel = 'dificil';
+            nextLevelName = 'Difícil';
+            audioManager.play('levelUp');
             showConfetti();
-        } else if (currentLevel === 'medio') {
             levelMessage = `🏆 ¡Nivel Medio Superado! Nivel Difícil Desbloqueado 🏆 (${percentage}% - Mínimo ${REQUIRED_PERCENTAGE}%)`;
-            audioManager.play('complete');
-            showConfetti();
         } else if (currentLevel === 'dificil') {
-            levelMessage = `👑 ¡Nivel Difícil Dominado! ¡Eres un Experto en Historia Denominacional! 👑 (${percentage}%)`;
+            // Completar capítulo y preparar para siguiente capítulo
+            nextChapter = 2;
             audioManager.play('complete');
             showConfetti();
+            levelMessage = `👑 ¡Nivel Difícil Dominado! ¡Has completado el Capítulo 1! 👑 (${percentage}%)`;
+        } else if (currentLevel === 'facil' && levelUnlocked.medio) {
+            levelMessage = `✅ ¡Nivel Fácil Completado! (${percentage}%)`;
+        } else if (currentLevel === 'medio' && levelUnlocked.dificil) {
+            levelMessage = `✅ ¡Nivel Medio Completado! (${percentage}%)`;
         }
+        
+        // Actualizar botones de nivel
+        updateLevelButtons();
     } else if (allQuestionsAnswered && percentage < REQUIRED_PERCENTAGE) {
         levelMessage = `⚠️ Necesitas ${REQUIRED_PERCENTAGE}% para desbloquear el siguiente nivel. Obtuviste ${percentage}% ⚠️`;
     } else {
         levelMessage = `📖 Completa todas las preguntas para desbloquear el siguiente nivel (requiere ${REQUIRED_PERCENTAGE}%)`;
     }
     
+    // Mensaje según porcentaje
     if (percentage >= 90) message = '¡Excelente! Eres un experto en Historia Denominacional.';
     else if (percentage >= REQUIRED_PERCENTAGE) message = '¡Muy bien! Has superado el nivel.';
     else if (percentage >= 50) message = 'Bien, pero puedes repasar algunos conceptos.';
     else message = 'Sigue estudiando, la historia de la iglesia es fascinante.';
     
+    // Construir botones de acción
+    let actionButtons = `
+        <button class="final-btn" onclick="backToMenu()">📚 Volver al Menú</button>
+        <button class="final-btn" onclick="restartChapter()">🔄 Repetir Nivel</button>
+    `;
+    
+    // Botón para siguiente nivel (si está disponible)
+    if (nextLevel) {
+        actionButtons += `<button class="final-btn next-level-btn" onclick="goToNextLevel('${nextLevel}')">🎯 Siguiente Nivel: ${nextLevelName} →</button>`;
+    }
+    
+    // Botón para siguiente capítulo (si completó el nivel difícil)
+    if (nextChapter) {
+        actionButtons += `<button class="final-btn next-chapter-btn" onclick="goToNextChapter(${nextChapter})">📖 Siguiente Capítulo: ${nextChapter} →</button>`;
+    }
+    
+    // Botón para cambiar nivel manualmente
+    actionButtons += `<button class="final-btn" onclick="changeLevelPrompt()">🎮 Cambiar Nivel</button>`;
+    
     domElements.finalResults.innerHTML = `
         <div class="final-results-content">
-            <h2>🎉 ¡CAPÍTULO 1 COMPLETADO! 🎉</h2>
+            <h2>🎉 ${levelCompleted && currentLevel === 'dificil' ? '¡CAPÍTULO 1 COMPLETADO!' : '¡NIVEL COMPLETADO!'} 🎉</h2>
             <div class="level-badge">${levelMessage}</div>
             <div class="final-stats">
                 <div class="final-stat-item">
@@ -1543,9 +1585,7 @@ function showFinalResults() {
             <div class="final-percentage">${percentage}% de aciertos</div>
             <div class="final-message">"${message}"</div>
             <div class="final-buttons">
-                <button class="final-btn" onclick="backToMenu()">📚 Volver al Menú</button>
-                <button class="final-btn" onclick="restartChapter()">🔄 Repetir Nivel</button>
-                <button class="final-btn" onclick="changeLevelPrompt()">🎮 Cambiar Nivel</button>
+                ${actionButtons}
             </div>
         </div>
     `;
@@ -1557,6 +1597,44 @@ function showFinalResults() {
     
     loadChapterSelector();
     loadChaptersMenu();
+}
+
+// ============================================
+// FUNCIÓN PARA IR AL SIGUIENTE NIVEL
+// ============================================
+function goToNextLevel(level) {
+    if (confirm(`¿Ir al nivel ${level}? Se reiniciará tu progreso en este nivel.`)) {
+        currentLevel = level;
+        localStorage.setItem('historiaDenominacional_level', level);
+        
+        const allLevelBtns = document.querySelectorAll('.level-btn');
+        allLevelBtns.forEach(btn => {
+            if (btn.dataset.level === level) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        const chapterNumber = localStorage.getItem('historiaDenominacional_currentChapter') || '1';
+        if (domElements.chapterTitle) {
+            domElements.chapterTitle.textContent = `Capítulo ${chapterNumber}: La Iglesia Cristiana a Través de las Edades - Nivel ${level}`;
+        }
+        
+        restartChapter();
+    }
+}
+
+// ============================================
+// FUNCIÓN PARA IR AL SIGUIENTE CAPÍTULO
+// ============================================
+function goToNextChapter(chapterNumber) {
+    if (confirm(`¿Ir al Capítulo ${chapterNumber}? Se perderá tu progreso actual.`)) {
+        localStorage.setItem('historiaDenominacional_currentChapter', chapterNumber);
+        // Reiniciar nivel guardado para el nuevo capítulo
+        localStorage.setItem('historiaDenominacional_level', 'facil');
+        window.location.href = `../libros/capitulo${chapterNumber}.html`;
+    }
 }
 
 function changeLevelPrompt() {
@@ -1721,6 +1799,9 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// ============================================
+// HACER FUNCIONES GLOBALES
+// ============================================
 window.backToMenu = backToMenu;
 window.submitAnswer = submitAnswer;
 window.nextQuestion = nextQuestion;
@@ -1729,3 +1810,5 @@ window.changeLevel = changeLevel;
 window.changeLevelPrompt = changeLevelPrompt;
 window.toggleMenu = toggleMenu;
 window.goToChapter = goToChapter;
+window.goToNextLevel = goToNextLevel;
+window.goToNextChapter = goToNextChapter;
