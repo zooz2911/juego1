@@ -1596,3 +1596,30 @@ body {
         padding: 14px 18px;
     }
 }
+
+
+
+/* ============================================
+   BOTONES DE SIGUIENTE NIVEL/CAPÍTULO
+   ============================================ */
+.next-level-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.next-level-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(76, 175, 80, 0.5);
+}
+
+.next-chapter-btn {
+    background: linear-gradient(135deg, #2196f3 0%, #0b5e7e 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.next-chapter-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(33, 150, 243, 0.5);
+}
