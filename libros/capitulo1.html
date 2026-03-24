@@ -13,7 +13,7 @@
         <!-- SECCIÓN DEL TÍTULO PRINCIPAL -->
         <div class="title-section">
             <h1 class="main-title">HISTORIA DENOMINACIONAL</h1>
-            <div class="sub-title" id="chapterTitle">Capítulo 1: La Iglesia Cristiana a Través de las Edades</div>
+            <div class="sub-title" id="chapterTitle">Capítulo 1: La Iglesia Cristiana a Través de las Edades - Nivel fácil</div>
         </div>
 
         <!-- HEADER COMPLETO (VISIBLE EN ESCRITORIO) -->
@@ -43,29 +43,27 @@
             </div>
         </div>
 
-        <!-- MENÚ LATERAL - CON CAPÍTULOS 1-13 -->
+        <!-- MENÚ LATERAL - CON CAPÍTULOS 1-13 Y SELECTOR DE NIVELES -->
         <div class="side-menu hidden" id="sideMenu">
             <h3>📋 MENÚ RÁPIDO</h3>
             
             <button class="back-btn" onclick="backToMenu()">← Menú Principal</button>
             
+            <!-- SECCIÓN DE NIVELES EN EL MENÚ -->
+            <div class="level-selector-menu">
+                <h4>🎮 NIVEL DE DIFICULTAD</h4>
+                <div class="level-buttons">
+                    <button class="level-btn" data-level="facil" onclick="changeLevel('facil')">Fácil</button>
+                    <button class="level-btn" data-level="medio" onclick="changeLevel('medio')">Medio</button>
+                    <button class="level-btn" data-level="dificil" onclick="changeLevel('dificil')">Difícil</button>
+                </div>
+            </div>
+            
             <!-- SECCIÓN DE CAPÍTULOS 1-13 -->
             <div class="chapters-section">
                 <h4>📚 CAPÍTULOS 1-13</h4>
-                <div class="chapters-grid">
-                    <button class="chapter-btn" onclick="goToChapter(1)">1</button>
-                    <button class="chapter-btn" onclick="goToChapter(2)">2</button>
-                    <button class="chapter-btn" onclick="goToChapter(3)">3</button>
-                    <button class="chapter-btn" onclick="goToChapter(4)">4</button>
-                    <button class="chapter-btn" onclick="goToChapter(5)">5</button>
-                    <button class="chapter-btn" onclick="goToChapter(6)">6</button>
-                    <button class="chapter-btn" onclick="goToChapter(7)">7</button>
-                    <button class="chapter-btn" onclick="goToChapter(8)">8</button>
-                    <button class="chapter-btn" onclick="goToChapter(9)">9</button>
-                    <button class="chapter-btn" onclick="goToChapter(10)">10</button>
-                    <button class="chapter-btn" onclick="goToChapter(11)">11</button>
-                    <button class="chapter-btn" onclick="goToChapter(12)">12</button>
-                    <button class="chapter-btn" onclick="goToChapter(13)">13</button>
+                <div class="chapters-grid" id="chaptersGrid">
+                    <!-- Los capítulos se cargarán dinámicamente con JS -->
                 </div>
             </div>
             
